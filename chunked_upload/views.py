@@ -216,7 +216,7 @@ class ChunkedUploadView(ChunkedUploadBaseView):
             chunked_upload = get_object_or_404(self.get_queryset(request), upload_id=upload_id, md5_checksum=md5_checksum)
             self.is_valid_chunked_upload(chunked_upload)
         else:
-            attrs = {'filename': chunk.name, 'md5_checksum': md5_checksum, 'uploaded': uploaded}
+            attrs = {'filename': chunk.name, 'md5_checksum': md5_checksum, 'uploader': uploader}
             if hasattr(request, 'user') and request.user.is_authenticated():
                 attrs['user'] = request.user
             attrs.update(self.get_extra_attrs(request))
