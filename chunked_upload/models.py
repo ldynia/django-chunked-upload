@@ -23,6 +23,9 @@ def generate_filename(instance, filename):
     if '.' in instance.filename:
         extension = '.' + instance.filename.split('.')[-1]
         file_name = instance.upload_id + extension + '.part'
+        if extension == '.gz' and instance.filename.count('.') >= 2:
+            sub_extension = '.' + instance.filename.split('.')[-2]
+            file_name = instance.upload_id + sub_extension + extension + '.part'
 
     filename = os.path.join(UPLOAD_PATH, file_name)
     return time.strftime(filename)
