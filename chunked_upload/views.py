@@ -77,7 +77,7 @@ class ChunkedUploadBaseView(View):
         """
         Grants permission to start/continue an upload based on the request.
         """
-        if hasattr(request, 'user') and not request.user.is_authenticated():
+        if hasattr(request, 'user') and not request.user.is_anonymous() and not request.user.is_authenticated():
             raise ChunkedUploadError(status=http_status.HTTP_403_FORBIDDEN, error='Authentication credentials were not provided')
 
     def _post(self, request, *args, **kwargs):
@@ -186,7 +186,8 @@ class ChunkedUploadView(ChunkedUploadBaseView):
         return {
             'upload_id': chunked_upload.upload_id,
             'offset': chunked_upload.offset,
-            'expires': chunked_upload.expires_on
+            'expires': chunked_upload.expires_on,
+            'md5_checksum': chunked_upload.md5_checksum
         }
 
     def _post(self, request, *args, **kwargs):
@@ -206,12 +207,18 @@ class ChunkedUploadView(ChunkedUploadBaseView):
 
         upload_id = request.POST.get('upload_id')
 
-        # check if file was previously uploaded
+        # check if file was previously uploaded for auth user
         if not upload_id and md5_checksum:
             uploads_ordered = self.get_queryset(request).filter(md5_checksum=md5_checksum, status=COMPLETE, user_id=request.user.id).order_by('-created_on')
             if uploads_ordered:
                 upload_id = uploads_ordered.latest('created_on').upload_id
 
+        # check if file was previously uploaded for anonymous user
+        if upload_id and md5_checksum and request.user.is_anonymous():
+            uploads_ordered = self.get_queryset(request).filter(md5_checksum=md5_checksum, status=COMPLETE, upload_id=upload_id).order_by('-created_on')
+            if uploads_ordered:
+                upload_id = uploads_ordered.latest('created_on').upload_id
+                
         if upload_id:
             chunked_upload = get_object_or_404(self.get_queryset(request), upload_id=upload_id, md5_checksum=md5_checksum)
             self.is_valid_chunked_upload(chunked_upload)
