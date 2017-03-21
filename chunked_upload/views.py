@@ -208,7 +208,7 @@ class ChunkedUploadView(ChunkedUploadBaseView):
         upload_id = request.POST.get('upload_id')
 
         # check if file was previously uploaded for auth user
-        if not upload_id and md5_checksum:
+        if not upload_id and md5_checksum and not request.user.is_anonymous():
             uploads_ordered = self.get_queryset(request).filter(md5_checksum=md5_checksum, status=COMPLETE, user_id=request.user.id).order_by('-created_on')
             if uploads_ordered:
                 upload_id = uploads_ordered.latest('created_on').upload_id
