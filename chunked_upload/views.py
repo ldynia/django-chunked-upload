@@ -6,6 +6,7 @@ from django.shortcuts import get_list_or_404
 from django.shortcuts import get_object_or_404
 from django.core.files.base import ContentFile
 from django.utils import timezone
+from subprocess import CalledProcessError
 
 from .settings import MAX_BYTES
 from .models import ChunkedUpload
@@ -313,8 +314,16 @@ class ChunkedUploadCompleteView(ChunkedUploadBaseView):
 
         chunked_upload.status = COMPLETE
         chunked_upload.completed_on = timezone.now()
+        
+        # Rename successfully uploaded file
+        try:
+            CURRENT_FILE_PATH = str(chunked_upload.file.path)
+            NEW_FILE_PATH = CURRENT_FILE_PATH.replace('.part', '')
 
-        self._save(chunked_upload)
-        self.on_completion(chunked_upload.get_uploaded_file(), request)
+            command = 'mv ' + CURRENT_FILE_PATH + ' ' + NEW_FILE_PATH
+            output = check_output(command, shell=True)
 
-        return Response(self.get_response_data(chunked_upload, request), status=http_status.HTTP_200_OK)
+            chunked_upload.file = NEW_FILE_PATH
+        except CalledProcessError as error:
+            error_msg = "Failed to move file: '" + CURRENT_FILE_PATH + "'"
+            raise ChunkedUploadError(status=http_status.A
