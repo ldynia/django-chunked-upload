@@ -8,9 +8,9 @@ class http_status:
     HTTP_410_GONE = 410
     HTTP_500_SERVER_ERROR = 500
 
-UPLOADING = 'uploading'
-COMPLETE = 'complete'
 
+COMPLETE = 'complete'
+UPLOADING = 'uploading'
 CHUNKED_UPLOAD_CHOICES = (
     (UPLOADING, _('Uploading')),
     (COMPLETE, _('Complete')),
