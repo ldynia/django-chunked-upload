@@ -321,7 +321,7 @@ class ChunkedUploadCompleteView(ChunkedUploadBaseView):
             NEW_FILE_PATH = CURRENT_FILE_PATH.replace('.part', '')
 
             command = 'mv ' + CURRENT_FILE_PATH + ' ' + NEW_FILE_PATH
-            output = check_output(command, shell=True)
+            output = subprocess.check_output(command, shell=True)
 
             chunked_upload.file = NEW_FILE_PATH
         except CalledProcessError as error:
