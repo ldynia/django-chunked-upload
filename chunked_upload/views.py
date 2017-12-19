@@ -30,7 +30,7 @@ class ChunkedUploadBaseView(View):
         By default, users can only continue uploading their own uploads.
         """
         queryset = self.model.objects.all()
-        if hasattr(request, 'user') and request.user.is_authenticated():
+        if hasattr(request, 'user') and request.user.is_authenticated:
             queryset = queryset.filter(user=request.user)
         return queryset
 
@@ -210,13 +210,13 @@ class ChunkedUploadView(ChunkedUploadBaseView):
         upload_id = request.POST.get('upload_id')
 
         # check if file was previously uploaded for auth user
-        if not upload_id and md5_checksum and not request.user.is_anonymous():
+        if not upload_id and md5_checksum and not request.user.is_anonymous:
             uploads_ordered = self.get_queryset(request).filter(md5_checksum=md5_checksum, status=COMPLETE, user_id=request.user.id).order_by('-created_on')
             if uploads_ordered:
                 upload_id = uploads_ordered.latest('created_on').upload_id
 
         # check if file was previously uploaded for anonymous user
-        if upload_id and md5_checksum and request.user.is_anonymous():
+        if upload_id and md5_checksum and request.user.is_anonymous:
             uploads_ordered = self.get_queryset(request).filter(md5_checksum=md5_checksum, status=COMPLETE, upload_id=upload_id).order_by('-created_on')
             if uploads_ordered:
                 upload_id = uploads_ordered.latest('created_on').upload_id
@@ -226,7 +226,7 @@ class ChunkedUploadView(ChunkedUploadBaseView):
             self.is_valid_chunked_upload(chunked_upload)
         else:
             attrs = {'filename': chunk.name, 'md5_checksum': md5_checksum, 'uploader': uploader}
-            if hasattr(request, 'user') and request.user.is_authenticated():
+            if hasattr(request, 'user') and request.user.is_authenticated:
                 attrs['user'] = request.user
             attrs.update(self.get_extra_attrs(request))
 
