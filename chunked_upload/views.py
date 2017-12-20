@@ -320,11 +320,10 @@ class ChunkedUploadCompleteView(ChunkedUploadBaseView):
         try:
             CURRENT_FILE_PATH = str(chunked_upload.file.path)
             NEW_FILE_PATH = CURRENT_FILE_PATH.replace('.part', '')
-
-            command = 'mv ' + CURRENT_FILE_PATH + ' ' + NEW_FILE_PATH
-            output = subprocess.check_output(command, shell=True)
-
-            chunked_upload.file = NEW_FILE_PATH
+            if CURRENT_FILE_PATH != NEW_FILE_PATH:
+                command = 'mv ' + CURRENT_FILE_PATH + ' ' + NEW_FILE_PATH
+                output = subprocess.check_output(command, shell=True)
+                chunked_upload.file = NEW_FILE_PATH
         except CalledProcessError as error:
             error_msg = "Failed to move file: '" + CURRENT_FILE_PATH + "'"
             raise ChunkedUploadError(status=http_status.HTTP_500_SERVER_ERROR, error=error_msg)
